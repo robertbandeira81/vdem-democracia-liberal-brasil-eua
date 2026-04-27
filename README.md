@@ -36,14 +36,6 @@ Saídas esperadas:
 - `data_output/eua_media_vdem_por_governo.csv`
 - `figures/eua_democracia_liberal_por_governo.png`
 
-### `R/03_comparativo_brasil_eua.R`
-
-Reúne as tabelas de Brasil e Estados Unidos em um único arquivo comparativo.
-
-Saída esperada:
-
-- `data_output/comparativo_brasil_eua_vdem.csv`
-
 ## Como replicar
 
 Abra o projeto no RStudio e execute os scripts nesta ordem:
@@ -52,7 +44,6 @@ Abra o projeto no RStudio e execute os scripts nesta ordem:
 source("R/00_setup.R")
 source("R/01_brasil_vdem.R")
 source("R/02_eua_vdem.R")
-source("R/03_comparativo_brasil_eua.R")
 ```
 
 ## Fonte dos dados
