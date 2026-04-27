@@ -1,0 +1,119 @@
+# 00_setup.R -------------------------------------------------------------
+# Pacotes necessários para a replicação.
+# Execute este script antes dos demais, caso ainda não tenha os pacotes instalados.
+
+if (!requireNamespace("pacman", quietly = TRUE)) {
+  install.packages("pacman")
+}
+
+pacman::p_load(
+  vdemdata,
+  tidyverse,
+  scales
+)
+
+# 01_brasil_vdem.R -------------------------------------------------------
+# Objetivo: calcular e visualizar a média do índice de democracia liberal
+# do V-Dem para o Brasil, por governo, entre 1988 e 2025.
+
+source("R/00_setup.R")
+
+data(vdem)
+
+# 1. Recorte da base ------------------------------------------------------
+br_dem <- vdem |>
+  filter(country_text_id == "BRA", year >= 1988, year <= 2025) |>
+  select(year, v2x_libdem) |>
+  mutate(
+    governo = case_when(
+      year %in% 1988:1989 ~ "Sarney",
+      year %in% 1990:1992 ~ "Collor",
+      year %in% 1993:1994 ~ "Itamar",
+      year %in% 1995:2002 ~ "FHC",
+      year %in% 2003:2010 ~ "Lula I-II",
+      year %in% 2011:2016 ~ "Dilma",
+      year %in% 2017:2018 ~ "Temer",
+      year %in% 2019:2022 ~ "Bolsonaro",
+      year %in% 2023:2025 ~ "Lula III",
+      TRUE ~ NA_character_
+    )
+  ) |>
+  drop_na(governo)
+
+# 2. Média por governo ----------------------------------------------------
+br_bar <- br_dem |>
+  group_by(governo) |>
+  summarise(
+    media = mean(v2x_libdem, na.rm = TRUE),
+    n_anos = n(),
+    .groups = "drop"
+  ) |>
+  mutate(
+    governo = factor(
+      governo,
+      levels = c(
+        "Sarney", "Collor", "Itamar", "FHC",
+        "Lula I-II", "Dilma", "Temer", "Bolsonaro", "Lula III"
+      )
+    )
+  )
+
+print(br_bar)
+
+media_geral_br <- mean(br_bar$media, na.rm = TRUE)
+
+# 3. Gráfico --------------------------------------------------------------
+grafico_br <- br_bar |>
+  ggplot(aes(x = governo, y = media)) +
+  geom_hline(
+    yintercept = media_geral_br,
+    linetype = "dashed",
+    linewidth = 0.6,
+    color = "grey35"
+  ) +
+  geom_segment(
+    aes(x = governo, xend = governo, y = 0.52, yend = media - 0.01),
+    linewidth = 0.4,
+    color = "grey45"
+  ) +
+  geom_point(size = 3.2) +
+  geom_text(
+    aes(label = sprintf("%.2f", media)),
+    nudge_y = 0.025,
+    fontface = "bold",
+    size = 4.8
+  ) +
+  scale_y_continuous(
+    limits = c(0.50, 0.85),
+    breaks = c(0.5, 0.6, 0.7, 0.8),
+    expand = expansion(mult = c(0, 0.03))
+  ) +
+  labs(
+    title = "Democracia liberal no Brasil por governo",
+    subtitle = "Média do índice V-Dem, 1988-2025",
+    x = NULL,
+    y = "Média do índice",
+    caption = "Fonte: V-Dem. Nota: a linha tracejada indica a média geral do índice no período 1988-2025."
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 18),
+    plot.subtitle = element_text(margin = margin(b = 10)),
+    axis.title.y = element_text(face = "bold"),
+    axis.text = element_text(color = "black"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+    plot.caption = element_text(hjust = 0, size = 10)
+  )
+
+print(grafico_br)
+
+# 4. Exportação das saídas ------------------------------------------------
+write_csv(br_bar, "data_output/brasil_media_vdem_por_governo.csv")
+ggsave(
+  filename = "figures/brasil_democracia_liberal_por_governo.png",
+  plot = grafico_br,
+  width = 10,
+  height = 6,
+  dpi = 300
+)
