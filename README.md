@@ -12,21 +12,6 @@ O objetivo é organizar uma rotina simples e replicável para:
 4. calcular a média do índice de democracia liberal por governo;
 5. gerar gráficos prontos para análise e divulgação.
 
-## Estrutura do repositório
-
-```text
-vdem-democracia-liberal/
-├── R/
-│   ├── 00_setup.R
-│   ├── 01_brasil_vdem.R
-│   ├── 02_eua_vdem.R
-│   └── 03_comparativo_brasil_eua.R
-├── data_output/
-├── figures/
-├── .gitignore
-└── README.md
-```
-
 ## Scripts
 
 ### `R/00_setup.R`
